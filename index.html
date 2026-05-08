@@ -2,668 +2,592 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PME Defect Analysis — Code Issue · Customer Discovered</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-  :root {
-    --bg: #F7F6F3;
-    --surface: #FFFFFF;
-    --surface2: #F0EEE9;
-    --border: rgba(0,0,0,0.08);
-    --border2: rgba(0,0,0,0.14);
-    --text: #1A1916;
-    --text2: #6B6860;
-    --text3: #9E9C96;
-    --blue: #1B5FA8;
-    --blue-light: #DBE9F8;
-    --amber: #B06D10;
-    --amber-light: #FEF0D6;
-    --red: #B52B2B;
-    --red-light: #FDEAEA;
-    --green: #226B3A;
-    --green-light: #E4F5EC;
-    --teal: #0E6B5E;
-    --teal-light: #DFF2EE;
-    --purple: #5140AA;
-    --purple-light: #EDEAFB;
-    --radius: 10px;
-    --radius-lg: 16px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.05);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    font-size: 14px;
-    line-height: 1.6;
-    min-height: 100vh;
-  }
+:root {
+  --bg:#F7F6F3; --surface:#FFFFFF; --surface2:#F0EEE9; --surface3:#E8E6E1;
+  --border:rgba(0,0,0,.08); --border2:rgba(0,0,0,.14);
+  --text:#1A1916; --text2:#6B6860; --text3:#9E9C96;
+  --blue:#1B5FA8; --blue-l:rgba(27,95,168,.10);
+  --amber:#B06D10; --amber-l:rgba(176,109,16,.10);
+  --red:#B52B2B; --red-l:rgba(181,43,43,.10);
+  --green:#226B3A; --green-l:rgba(34,107,58,.10);
+  --teal:#0E6B5E; --teal-l:rgba(14,107,94,.10);
+  --purple:#5140AA; --purple-l:rgba(81,64,170,.10);
+  --r:10px; --rl:14px;
+  --sh:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.6}
 
-  /* HEADER */
-  .header {
-    background: var(--text);
-    padding: 28px 40px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-  }
-  .header-left h1 {
-    font-size: 22px;
-    font-weight: 600;
-    color: #fff;
-    letter-spacing: -0.3px;
-    margin-bottom: 6px;
-  }
-  .header-left .subtitle {
-    font-size: 13px;
-    color: rgba(255,255,255,0.5);
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  .filter-pill {
-    background: rgba(255,255,255,0.12);
-    color: rgba(255,255,255,0.85);
-    font-size: 11px;
-    padding: 3px 10px;
-    border-radius: 20px;
-    border: 1px solid rgba(255,255,255,0.18);
-    font-family: 'DM Mono', monospace;
-  }
-  .header-right {
-    text-align: right;
-  }
-  .header-right .date {
-    font-size: 12px;
-    color: rgba(255,255,255,0.4);
-    font-family: 'DM Mono', monospace;
-  }
-  .header-right .report-id {
-    font-size: 11px;
-    color: rgba(255,255,255,0.25);
-    font-family: 'DM Mono', monospace;
-    margin-top: 3px;
-  }
+/* NAV */
+.nav{position:sticky;top:0;z-index:100;background:rgba(247,246,243,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 36px;display:flex;align-items:center;justify-content:space-between;height:52px}
+.nav-brand{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:10px}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:var(--blue);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.nav-links{display:flex;gap:4px}
+.nav-links a{font-size:12px;color:var(--text3);text-decoration:none;padding:5px 12px;border-radius:6px;transition:all .15s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-meta{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace}
 
-  /* MAIN */
-  .main { padding: 32px 40px 48px; max-width: 1200px; margin: 0 auto; }
+/* HEADER */
+.header{background:linear-gradient(135deg,#EAF0FB 0%,#F7F6F3 50%,#F2EDF7 100%);padding:48px 36px 40px;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:-60px;right:-60px;width:400px;height:400px;background:radial-gradient(circle,rgba(27,95,168,.07) 0%,transparent 70%);pointer-events:none}
+.header-inner{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;gap:24px}
+.header h1{font-size:28px;font-weight:700;letter-spacing:-.5px;margin-bottom:10px;color:var(--text)}
+.header h1 span{color:var(--blue)}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap}
+.fp{font-size:11px;font-family:'JetBrains Mono',monospace;background:var(--blue-l);color:var(--blue);border:1px solid rgba(27,95,168,.2);padding:3px 10px;border-radius:20px}
+.header-meta{text-align:right;flex-shrink:0}
+.header-meta .gen{font-size:12px;color:var(--text3);font-family:'JetBrains Mono',monospace}
+.header-meta .rid{font-size:11px;color:var(--text3);margin-top:3px;font-family:'JetBrains Mono',monospace}
 
-  /* METRIC STRIP */
-  .metric-strip {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 12px;
-    margin-bottom: 28px;
-  }
-  .metric-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px 20px 16px;
-    box-shadow: var(--shadow);
-    position: relative;
-    overflow: hidden;
-  }
-  .metric-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: var(--accent, var(--blue));
-    border-radius: 2px 2px 0 0;
-  }
-  .metric-card .m-label {
-    font-size: 11px;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-weight: 500;
-    margin-bottom: 8px;
-  }
-  .metric-card .m-value {
-    font-size: 30px;
-    font-weight: 600;
-    color: var(--text);
-    letter-spacing: -1px;
-    line-height: 1;
-    margin-bottom: 5px;
-  }
-  .metric-card .m-sub {
-    font-size: 11px;
-    color: var(--text3);
-  }
-  .metric-card .m-delta {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    font-size: 11px;
-    font-weight: 500;
-    padding: 2px 7px;
-    border-radius: 20px;
-    margin-top: 4px;
-  }
-  .delta-down { background: var(--green-light); color: var(--green); }
-  .delta-up { background: var(--red-light); color: var(--red); }
-  .delta-neutral { background: var(--amber-light); color: var(--amber); }
+/* MAIN */
+.main{max-width:1200px;margin:0 auto;padding:32px 36px 60px}
 
-  /* SECTION LABEL */
-  .section-label {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text3);
-    margin-bottom: 12px;
-    margin-top: 28px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .section-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
+/* SECTION LABELS */
+.sec-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin:36px 0 14px;display:flex;align-items:center;gap:10px}
+.sec-label::before{content:'';width:3px;height:14px;background:var(--blue);border-radius:2px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--border)}
 
-  /* CHART CARDS */
-  .chart-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 22px 24px;
-    box-shadow: var(--shadow);
-  }
-  .chart-card .card-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-  .chart-card .card-desc {
-    font-size: 12px;
-    color: var(--text3);
-    margin-bottom: 16px;
-  }
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-  .grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 16px; }
-  .mb16 { margin-bottom: 16px; }
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:4px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:18px 18px 16px;position:relative;overflow:hidden;box-shadow:var(--sh);transition:border-color .2s}
+.kpi:hover{border-color:var(--border2)}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--ac,var(--blue))}
+.kl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);font-weight:600;margin-bottom:10px}
+.kv{font-size:28px;font-weight:700;letter-spacing:-1px;line-height:1;margin-bottom:4px}
+.ks{font-size:11px;color:var(--text3)}
+.kd{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;margin-top:6px;font-family:'JetBrains Mono',monospace}
+.kd-g{background:var(--green-l);color:var(--green)}
+.kd-r{background:var(--red-l);color:var(--red)}
+.kd-a{background:var(--amber-l);color:var(--amber)}
+.kd-b{background:var(--blue-l);color:var(--blue)}
 
-  /* LEGEND */
-  .legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-    margin-bottom: 14px;
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--text2);
-  }
-  .legend-sq {
-    width: 10px; height: 10px;
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px 22px;box-shadow:var(--sh)}
+.card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px}
+.card-sub{font-size:11px;color:var(--text3);margin-bottom:16px}
 
-  /* INSIGHT BOX */
-  .insight-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-  .insight-card {
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    border: 1px solid transparent;
-  }
-  .insight-card.blue { background: var(--blue-light); border-color: rgba(27,95,168,0.15); }
-  .insight-card.amber { background: var(--amber-light); border-color: rgba(176,109,16,0.15); }
-  .insight-card.green { background: var(--green-light); border-color: rgba(34,107,58,0.15); }
-  .insight-card.red { background: var(--red-light); border-color: rgba(181,43,43,0.15); }
-  .insight-card.purple { background: var(--purple-light); border-color: rgba(81,64,170,0.15); }
-  .insight-icon { font-size: 18px; margin-bottom: 6px; }
-  .insight-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-  .insight-text { font-size: 12px; color: var(--text2); line-height: 1.5; }
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.g3{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px}
+.g32{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:12px}
+.mb12{margin-bottom:12px}
 
-  /* TABLE */
-  .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  .data-table th {
-    text-align: left;
-    padding: 8px 12px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text3);
-    border-bottom: 1px solid var(--border2);
-    background: var(--surface2);
-  }
-  .data-table td {
-    padding: 9px 12px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text);
-    vertical-align: middle;
-  }
-  .data-table tr:last-child td { border-bottom: none; }
-  .data-table tr:hover td { background: var(--surface2); }
-  .bar-inline {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .bar-bg {
-    flex: 1;
-    height: 6px;
-    background: var(--surface2);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-  .bar-fill { height: 100%; border-radius: 3px; }
-  .badge {
-    display: inline-block;
-    font-size: 10px;
-    font-weight: 600;
-    padding: 2px 7px;
-    border-radius: 20px;
-    font-family: 'DM Mono', monospace;
-  }
-  .badge-blue { background: var(--blue-light); color: var(--blue); }
-  .badge-amber { background: var(--amber-light); color: var(--amber); }
-  .badge-red { background: var(--red-light); color: var(--red); }
-  .badge-green { background: var(--green-light); color: var(--green); }
+/* LEGEND */
+.leg{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:12px}
+.li{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)}
+.ls{width:10px;height:10px;border-radius:2px;flex-shrink:0}
 
-  /* FOOTER */
-  .footer {
-    background: var(--surface2);
-    border-top: 1px solid var(--border);
-    padding: 18px 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .footer .f-left {
-    font-size: 12px;
-    color: var(--text3);
-  }
-  .footer .f-right {
-    font-size: 11px;
-    color: var(--text3);
-    font-family: 'DM Mono', monospace;
-  }
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{text-align:left;padding:8px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);border-bottom:1px solid var(--border2);background:var(--surface2)}
+.tbl td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--surface2)}
+.mono{font-family:'JetBrains Mono',monospace;font-size:11px}
+.bar-wrap{display:flex;align-items:center;gap:8px}
+.bar-bg{flex:1;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px}
+.badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;font-family:'JetBrains Mono',monospace}
+.b-r{background:var(--red-l);color:var(--red)}
+.b-a{background:var(--amber-l);color:var(--amber)}
+.b-g{background:var(--green-l);color:var(--green)}
+.b-b{background:var(--blue-l);color:var(--blue)}
 
-  @media (max-width: 900px) {
-    .header { padding: 20px 20px; flex-direction: column; align-items: flex-start; gap: 8px; }
-    .main { padding: 20px 16px 40px; }
-    .metric-strip { grid-template-columns: repeat(2, 1fr); }
-    .grid-2, .grid-3 { grid-template-columns: 1fr; }
-    .insight-grid { grid-template-columns: 1fr 1fr; }
-    .footer { padding: 14px 20px; flex-direction: column; gap: 6px; align-items: flex-start; }
-  }
+/* COMBO */
+.combo-row{display:flex;align-items:center;padding:9px 14px;border-bottom:1px solid var(--border);gap:12px;font-size:12px}
+.combo-row:last-child{border-bottom:none}
+.combo-row:hover{background:var(--surface2)}
+.combo-rank{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;width:22px;flex-shrink:0}
+.combo-fa{flex:1;color:var(--text);font-weight:500}
+.combo-arrow{color:var(--text3);flex-shrink:0}
+.combo-sub{flex:1;color:var(--text2)}
+.combo-count{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--blue);flex-shrink:0}
+
+/* INSIGHTS */
+.ins-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.ins{border-radius:var(--r);padding:16px;border:1px solid transparent}
+.ins.blue{background:var(--blue-l);border-color:rgba(27,95,168,.15)}
+.ins.amber{background:var(--amber-l);border-color:rgba(176,109,16,.15)}
+.ins.green{background:var(--green-l);border-color:rgba(34,107,58,.15)}
+.ins.red{background:var(--red-l);border-color:rgba(181,43,43,.15)}
+.ins.purple{background:var(--purple-l);border-color:rgba(81,64,170,.15)}
+.ins.teal{background:var(--teal-l);border-color:rgba(14,107,94,.15)}
+.ii{font-size:20px;margin-bottom:8px}
+.it{font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px}
+.ix{font-size:11px;color:var(--text2);line-height:1.55}
+
+/* TEAM */
+.team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.team-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;text-align:center}
+.team-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px}
+.team-count{font-size:22px;font-weight:700;letter-spacing:-.5px;font-family:'JetBrains Mono',monospace}
+.team-pct{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* FOOTER */
+footer{background:var(--surface2);border-top:1px solid var(--border);padding:18px 36px;display:flex;justify-content:space-between;align-items:center}
+footer .fl{font-size:11px;color:var(--text3)}
+footer .fr{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace}
+
+@media(max-width:900px){
+  .nav{padding:0 16px}.nav-links{display:none}
+  .header{padding:28px 16px}.header-inner{flex-direction:column;align-items:flex-start}
+  .main{padding:20px 16px 48px}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .g2,.g3,.g32{grid-template-columns:1fr}
+  .ins-grid{grid-template-columns:1fr 1fr}
+  .team-grid{grid-template-columns:repeat(2,1fr)}
+  footer{flex-direction:column;gap:4px;padding:14px 16px}
+}
 </style>
 </head>
 <body>
 
-<header class="header">
-  <div class="header-left">
-    <h1>PME Defect Analysis</h1>
-    <div class="subtitle">
-      <span>Filters active:</span>
-      <span class="filter-pill">DefectRCA = Code issue</span>
-      <span class="filter-pill">DiscoveredBy = Customer</span>
-      <span class="filter-pill">Past 12 months</span>
-    </div>
+<nav class="nav">
+  <div class="nav-brand"><div class="nav-dot"></div>PME Defect Analysis</div>
+  <div class="nav-links">
+    <a href="#overview">Overview</a>
+    <a href="#trend">Trend</a>
+    <a href="#functional">Functional Area</a>
+    <a href="#subfunctional">Sub-functional</a>
+    <a href="#teams">Teams</a>
+    <a href="#insights">Insights</a>
   </div>
-  <div class="header-right">
-    <div class="date" id="report-date"></div>
-    <div class="report-id">PME-RCA-001 · Monthly Report</div>
+  <div class="nav-meta" id="nav-date"></div>
+</nav>
+
+<header class="header">
+  <div class="header-inner">
+    <div>
+      <h1>PME <span>Defect</span> Analysis</h1>
+      <div class="filter-row">
+        <span class="fp">DefectRCA = Code issue</span>
+        <span class="fp">DiscoveredBy = Customer</span>
+        <span class="fp">Past 12 months</span>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="gen" id="gen-date"></div>
+      <div class="rid">PME-RCA-001 · Monthly Report</div>
+    </div>
   </div>
 </header>
 
 <main class="main">
 
-  <!-- KPI STRIP -->
-  <div class="metric-strip">
-    <div class="metric-card" style="--accent:#1B5FA8">
-      <div class="m-label">Total defects (12m)</div>
-      <div class="m-value">1,026</div>
-      <div class="m-sub">Code issue · Customer</div>
+<!-- OVERVIEW -->
+<div class="sec-label" id="overview">Overview — Key metrics</div>
+<div class="kpi-grid">
+  <div class="kpi" style="--ac:var(--blue)"><div class="kl">Total defects (12m)</div><div class="kv">1,026</div><div class="ks">Code issue · Customer</div></div>
+  <div class="kpi" style="--ac:var(--amber)"><div class="kl">2025 avg / month</div><div class="kv">87.5</div><div class="ks">Jan–Dec 2025</div><div class="kd kd-r">▲ baseline</div></div>
+  <div class="kpi" style="--ac:var(--green)"><div class="kl">2026 avg / month</div><div class="kv">62.4</div><div class="ks">Jan–Apr 2026</div><div class="kd kd-g">▼ 29% vs 2025</div></div>
+  <div class="kpi" style="--ac:var(--red)"><div class="kl">Peak month</div><div class="kv">129</div><div class="ks">Jun 2025</div><div class="kd kd-a">↘ resolved</div></div>
+  <div class="kpi" style="--ac:var(--green)"><div class="kl">Resolution rate</div><div class="kv">94.3%</div><div class="ks">968 of 1,026 closed</div><div class="kd kd-g">✓ healthy</div></div>
+</div>
+
+<!-- TREND -->
+<div class="sec-label" id="trend">Monthly trend &amp; severity</div>
+<div class="mb12">
+  <div class="card">
+    <div class="card-title">Month-over-month defect count with 3-month moving average</div>
+    <div class="card-sub">Code issue defects discovered by customers — May 2025 to Apr 2026</div>
+    <div class="leg">
+      <div class="li"><div class="ls" style="background:rgba(27,95,168,.45)"></div>Monthly count</div>
+      <div class="li"><div class="ls" style="background:var(--red);height:2px;border-radius:0;width:18px;align-self:center"></div>3-month moving avg</div>
     </div>
-    <div class="metric-card" style="--accent:#B06D10">
-      <div class="m-label">2025 avg / month</div>
-      <div class="m-value">87.5</div>
-      <div class="m-sub">Jan–Dec 2025</div>
-      <div class="m-delta delta-up">▲ baseline</div>
+    <div style="position:relative;height:210px"><canvas id="trendChart"></canvas></div>
+  </div>
+</div>
+<div class="g2">
+  <div class="card">
+    <div class="card-title">Severity breakdown by month</div>
+    <div class="card-sub">Stacked Critical / High / Medium</div>
+    <div class="leg">
+      <div class="li"><div class="ls" style="background:var(--red)"></div>Critical</div>
+      <div class="li"><div class="ls" style="background:var(--amber)"></div>High</div>
+      <div class="li"><div class="ls" style="background:var(--blue)"></div>Medium</div>
     </div>
-    <div class="metric-card" style="--accent:#226B3A">
-      <div class="m-label">2026 avg / month</div>
-      <div class="m-value">62.4</div>
-      <div class="m-sub">Jan–Apr 2026</div>
-      <div class="m-delta delta-down">▼ 29% vs 2025</div>
-    </div>
-    <div class="metric-card" style="--accent:#B52B2B">
-      <div class="m-label">Peak month</div>
-      <div class="m-value">129</div>
-      <div class="m-sub">Jun 2025</div>
-      <div class="m-delta delta-neutral">↘ resolved</div>
-    </div>
-    <div class="metric-card" style="--accent:#226B3A">
-      <div class="m-label">Resolution rate</div>
-      <div class="m-value">94.3%</div>
-      <div class="m-sub">968 of 1,026 closed</div>
-      <div class="m-delta delta-down">✓ healthy</div>
+    <div style="position:relative;height:200px"><canvas id="sevChart"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Resolution status</div>
+    <div class="card-sub">Open vs closed breakdown</div>
+    <div style="position:relative;height:180px"><canvas id="stateChart"></canvas></div>
+    <div class="leg" style="margin-top:10px;flex-direction:column;gap:5px">
+      <div class="li"><div class="ls" style="background:var(--green)"></div>Closed — 94.3%</div>
+      <div class="li"><div class="ls" style="background:var(--red)"></div>Active — 1.5%</div>
+      <div class="li"><div class="ls" style="background:var(--amber)"></div>Test in Progress — 1.4%</div>
+      <div class="li"><div class="ls" style="background:var(--blue)"></div>Other — 2.8%</div>
     </div>
   </div>
+</div>
 
-  <!-- TREND SECTION -->
-  <div class="section-label">Monthly trend &amp; severity</div>
-
-  <div class="mb16">
-    <div class="chart-card">
-      <div class="card-title">Month-over-month defect count with 3-month moving average</div>
-      <div class="card-desc">Code issue defects discovered by customers — May 2025 to May 2026</div>
-      <div class="legend">
-        <div class="legend-item"><div class="legend-sq" style="background:#1B5FA8"></div>Monthly count</div>
-        <div class="legend-item"><div class="legend-sq" style="background:#B52B2B; height:2px; border-radius:0; width:16px; align-self:center;"></div>3-month moving avg</div>
-      </div>
-      <div style="position:relative;height:220px;">
-        <canvas id="trendChart" role="img" aria-label="Monthly defect trend May 2025 to May 2026 with 3-month moving average overlay showing downward trend from Jun 2025 peak.">Monthly: May 77, Jun 129, Jul 87, Aug 99, Sep 100, Oct 91, Nov 68, Dec 63, Jan 77, Feb 74, Mar 81, Apr 74.</canvas>
-      </div>
-    </div>
+<!-- FUNCTIONAL AREA -->
+<div class="sec-label" id="functional">Functional Area analysis</div>
+<div class="g32 mb12">
+  <div class="card">
+    <div class="card-title">Top functional areas — defect count</div>
+    <div class="card-sub">Past 12 months · top 12 areas</div>
+    <div style="position:relative;height:300px"><canvas id="faBarChart"></canvas></div>
   </div>
-
-  <div class="grid-2">
-    <div class="chart-card">
-      <div class="card-title">Severity breakdown by month</div>
-      <div class="card-desc">Stacked by Critical / High / Medium</div>
-      <div class="legend">
-        <div class="legend-item"><div class="legend-sq" style="background:#B52B2B"></div>Critical</div>
-        <div class="legend-item"><div class="legend-sq" style="background:#E09020"></div>High</div>
-        <div class="legend-item"><div class="legend-sq" style="background:#1B5FA8"></div>Medium</div>
-      </div>
-      <div style="position:relative;height:210px;">
-        <canvas id="sevChart" role="img" aria-label="Stacked bar severity chart. Mostly Medium and High; only 2 Critical incidents in Jun and Sep 2025.">Severity stacked monthly — High and Medium dominant, 2 Critical total.</canvas>
-      </div>
-    </div>
-    <div class="chart-card">
-      <div class="card-title">Defect resolution status</div>
-      <div class="card-desc">Current open vs closed breakdown</div>
-      <div style="position:relative;height:240px;">
-        <canvas id="stateChart" role="img" aria-label="Donut chart showing 94.3% closed, 5.7% open across various states.">States: Closed 968, Active 15, Test in Progress 14, Resolved 11, Defined 7, Ready to Work 6, Other 5.</canvas>
-      </div>
-      <div class="legend" style="margin-top:10px; justify-content:center;">
-        <div class="legend-item"><div class="legend-sq" style="background:#1D9E75"></div>Closed (94%)</div>
-        <div class="legend-item"><div class="legend-sq" style="background:#E24B4A"></div>Active (1.5%)</div>
-        <div class="legend-item"><div class="legend-sq" style="background:#EF9F27"></div>In Progress (1.4%)</div>
-        <div class="legend-item"><div class="legend-sq" style="background:#378ADD"></div>Other (3%)</div>
-      </div>
-    </div>
+  <div class="card">
+    <div class="card-title">FA share of total</div>
+    <div class="card-sub">Distribution by volume</div>
+    <div style="position:relative;height:200px"><canvas id="faPieChart"></canvas></div>
+    <div class="leg" style="margin-top:10px;flex-direction:column;gap:5px" id="fa-pie-legend"></div>
   </div>
-
-  <!-- DOMAIN SECTION -->
-  <div class="section-label">Domain &amp; area breakdown</div>
-
-  <div class="grid-3 mb16">
-    <div class="chart-card">
-      <div class="card-title">Top affected domains</div>
-      <div class="card-desc">Past 12 months · all defects in filter</div>
-      <div style="position:relative;height:280px;">
-        <canvas id="domainChart" role="img" aria-label="Horizontal bar chart. Compliance Affordable leads at 290, Financial AR at 238, then Affordable Processing 105, Renewals 95, Move in/out 82.">Top domains by defect count.</canvas>
-      </div>
-    </div>
-    <div class="chart-card">
-      <div class="card-title">Domain distribution</div>
-      <div class="card-desc">Share of total volume</div>
-      <div style="position:relative;height:220px;">
-        <canvas id="domainPie" role="img" aria-label="Donut chart of domain share. Compliance Affordable and Financial AR together account for over 51%.">Domain share donut chart.</canvas>
-      </div>
-      <div class="legend" style="margin-top:10px; flex-direction:column; gap:6px;">
-        <div class="legend-item"><div class="legend-sq" style="background:#1B5FA8"></div>Compliance Affordable — 28%</div>
-        <div class="legend-item"><div class="legend-sq" style="background:#0E6B5E"></div>Financial AR — 23%</div>
-        <div class="legend-item"><div class="legend-sq" style="background:#B06D10"></div>Affordable Processing — 10%</div>
-        <div class="legend-item"><div class="legend-sq" style="background:#5140AA"></div>Renewals/Transfers — 9%</div>
-        <div class="legend-item"><div class="legend-sq" style="background:#B52B2B"></div>Move in/out — 8%</div>
-        <div class="legend-item"><div class="legend-sq" style="background:#888"></div>Others — 22%</div>
-      </div>
-    </div>
+</div>
+<div class="mb12">
+  <div class="card">
+    <div class="card-title">Top 6 functional areas — monthly trend</div>
+    <div class="card-sub">Volume over time per area (past 12 months)</div>
+    <div class="leg" id="fa-trend-legend"></div>
+    <div style="position:relative;height:230px"><canvas id="faTrendChart"></canvas></div>
   </div>
-
-  <!-- DOMAIN TABLE -->
-  <div class="chart-card mb16">
-    <div class="card-title" style="margin-bottom:14px;">Domain detail — past 12 months</div>
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Domain</th>
-          <th style="text-align:right;">Count</th>
-          <th style="text-align:right;">% Share</th>
-          <th style="width:180px;">Volume</th>
-          <th>Priority</th>
-        </tr>
-      </thead>
-      <tbody id="domain-table-body"></tbody>
+</div>
+<div class="mb12">
+  <div class="card">
+    <div class="card-title">Functional area detail — resolution health</div>
+    <div class="card-sub">Top 15 areas · defect count and closure rate</div>
+    <table class="tbl">
+      <thead><tr>
+        <th>#</th><th>Functional Area</th>
+        <th style="text-align:right">Total</th>
+        <th style="text-align:right">Closed</th>
+        <th style="text-align:right">Rate</th>
+        <th style="width:160px">Closure</th>
+        <th>Status</th>
+      </tr></thead>
+      <tbody id="fa-table-body"></tbody>
     </table>
   </div>
+</div>
 
-  <!-- RCA YEAR COMPARISON -->
-  <div class="section-label">Year-over-year &amp; RCA comparison</div>
-
-  <div class="mb16">
-    <div class="chart-card">
-      <div class="card-title">Average defects per month by RCA category — 2025 vs 2026</div>
-      <div class="card-desc">All Customer-discovered defects · grouped by root cause</div>
-      <div class="legend">
-        <div class="legend-item"><div class="legend-sq" style="background:#B5D4F4"></div>2025 avg/month</div>
-        <div class="legend-item"><div class="legend-sq" style="background:#1B5FA8"></div>2026 avg/month</div>
-      </div>
-      <div style="position:relative;height:240px;">
-        <canvas id="avgYearChart" role="img" aria-label="Grouped bar chart comparing RCA categories. Code issue is largest at 87.5 in 2025 and 62.4 in 2026. All categories show improvement.">Avg by year and RCA category grouped bar chart.</canvas>
-      </div>
-    </div>
+<!-- SUB-FUNCTIONAL -->
+<div class="sec-label" id="subfunctional">Sub-functional Area analysis</div>
+<div class="g2 mb12">
+  <div class="card">
+    <div class="card-title">Top sub-functional areas — defect count</div>
+    <div class="card-sub">Past 12 months · top 15</div>
+    <div style="position:relative;height:320px"><canvas id="subfaChart"></canvas></div>
   </div>
-
-  <!-- KEY INSIGHTS -->
-  <div class="section-label">Key insights &amp; recommendations</div>
-
-  <div class="insight-grid">
-    <div class="insight-card blue">
-      <div class="insight-icon">📉</div>
-      <div class="insight-title">Significant YoY improvement</div>
-      <div class="insight-text">Monthly average dropped from 87.5 (2025) to 62.4 (2026) — a 29% reduction. Code quality initiatives appear to be taking effect.</div>
+  <div class="card">
+    <div class="card-title">Sub-FA severity breakdown</div>
+    <div class="card-sub">High vs Medium split · top 10 sub-areas</div>
+    <div class="leg">
+      <div class="li"><div class="ls" style="background:var(--amber)"></div>High</div>
+      <div class="li"><div class="ls" style="background:var(--blue)"></div>Medium</div>
     </div>
-    <div class="insight-card red">
-      <div class="insight-icon">🔴</div>
-      <div class="insight-title">June 2025 spike — investigation needed</div>
-      <div class="insight-text">Jun 2025 saw 129 defects — 48% above the yearly average. A post-mortem or release retrospective is recommended to prevent recurrence.</div>
-    </div>
-    <div class="insight-card amber">
-      <div class="insight-icon">⚠️</div>
-      <div class="insight-title">Compliance Affordable is top domain</div>
-      <div class="insight-text">28% of all customer-reported code issues come from Compliance Affordable. Targeted code reviews and regression testing are advised.</div>
-    </div>
-    <div class="insight-card green">
-      <div class="insight-icon">✅</div>
-      <div class="insight-title">Resolution health is strong</div>
-      <div class="insight-text">94.3% of defects are closed with only 58 open items. The team is maintaining a healthy backlog closure rate.</div>
-    </div>
-    <div class="insight-card purple">
-      <div class="insight-icon">📊</div>
-      <div class="insight-title">2026 stabilizing at ~75/month</div>
-      <div class="insight-text">Jan–Apr 2026 show consistent volume of 74–81/month. Monitor for continued improvement or further decline to establish new baseline.</div>
-    </div>
-    <div class="insight-card blue">
-      <div class="insight-icon">🎯</div>
-      <div class="insight-title">Focus: Financial AR + Compliance</div>
-      <div class="insight-text">Top 2 domains (Compliance Affordable + Financial AR) account for 51% of all volume. Addressing these two areas has the highest leverage.</div>
-    </div>
+    <div style="position:relative;height:290px"><canvas id="subfaSevChart"></canvas></div>
   </div>
+</div>
+<div class="mb12">
+  <div class="card">
+    <div class="card-title">Top FA × Sub-functional Area combinations</div>
+    <div class="card-sub">Highest volume FA → SubFA pairings — top 15</div>
+    <div id="combo-list"></div>
+  </div>
+</div>
+
+<!-- TEAMS -->
+<div class="sec-label" id="teams">Team distribution (AreaLevel4)</div>
+<div class="mb12">
+  <div class="card">
+    <div class="card-title">Defects by engineering team</div>
+    <div class="card-sub">Past 12 months · AreaLevel4 breakdown</div>
+    <div class="team-grid" id="team-cards"></div>
+  </div>
+</div>
+<div class="g2 mb12">
+  <div class="card">
+    <div class="card-title">Team volume comparison</div>
+    <div class="card-sub">Horizontal bar by team</div>
+    <div style="position:relative;height:240px"><canvas id="teamChart"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">YoY RCA category averages</div>
+    <div class="card-sub">2025 vs 2026 avg defects/month</div>
+    <div class="leg">
+      <div class="li"><div class="ls" style="background:rgba(27,95,168,.35)"></div>2025 avg/mo</div>
+      <div class="li"><div class="ls" style="background:var(--blue)"></div>2026 avg/mo</div>
+    </div>
+    <div style="position:relative;height:215px"><canvas id="avgChart"></canvas></div>
+  </div>
+</div>
+
+<!-- INSIGHTS -->
+<div class="sec-label" id="insights">Key insights &amp; recommendations</div>
+<div class="ins-grid">
+  <div class="ins blue"><div class="ii">📉</div><div class="it">29% YoY improvement</div><div class="ix">Monthly avg dropped from 87.5 (2025) to 62.4 (2026). Code quality efforts are measurably working.</div></div>
+  <div class="ins red"><div class="ii">🔴</div><div class="it">Accounts - Residents dominates</div><div class="ix">257 defects in past 12m — 25% of all volume. Compliance Certifications is the #1 sub-area driver (138 issues).</div></div>
+  <div class="ins amber"><div class="ii">⚠️</div><div class="it">Compliance Certifications is critical</div><div class="ix">168 defects in this sub-area. 70% are High severity. Targeted regression coverage recommended immediately.</div></div>
+  <div class="ins green"><div class="ii">✅</div><div class="it">Strong resolution rates</div><div class="ix">OSPM: Residents and Operations both hit 100% closure. Accounts - Residents at 93.8% with only 16 open.</div></div>
+  <div class="ins purple"><div class="ii">🏆</div><div class="it">Stark team carries most load</div><div class="ix">265 defects across team Stark — nearly 2× Challengers (140). May indicate ownership concentration risk.</div></div>
+  <div class="ins teal"><div class="ii">🎯</div><div class="it">Focus: top FA × SubFA hotspot</div><div class="ix">Accounts-Residents + Compliance-Certifications (138) is the single highest-leverage combination to address.</div></div>
+</div>
 
 </main>
 
-<footer class="footer">
-  <div class="f-left">PME Defect Report · DefectRCA = Code issue · DiscoveredBy = Customer · Source: TFS WorkItems</div>
-  <div class="f-right" id="footer-date"></div>
+<footer>
+  <div class="fl">PME Defect Report · Code issue · Customer · Source: TFS WorkItems</div>
+  <div class="fr" id="footer-date"></div>
 </footer>
 
 <script>
-const now = new Date();
-const fmt = d => d.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
-document.getElementById('report-date').textContent = 'Generated ' + fmt(now);
-document.getElementById('footer-date').textContent = 'Report generated: ' + fmt(now);
-
-const months = ['May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26'];
-const counts = [77,129,87,99,100,91,68,63,77,74,81,74];
-const ma3 = counts.map((v,i) => i<2 ? null : Math.round((counts[i-2]+counts[i-1]+v)/3));
-
-const txtColor = '#9E9C96';
-const gridColor = 'rgba(0,0,0,0.06)';
-const baseScales = {
-  x:{ ticks:{color:txtColor,font:{size:11},autoSkip:false,maxRotation:40}, grid:{display:false}, border:{display:false} },
-  y:{ ticks:{color:txtColor,font:{size:11}}, grid:{color:gridColor}, border:{display:false} }
+// ── DATA ──────────────────────────────────────────────────────────────────
+const FA = {
+  months:["May 25","Jun 25","Jul 25","Aug 25","Sep 25","Oct 25","Nov 25","Dec 25","Jan 26","Feb 26","Mar 26","Apr 26","May 26"],
+  series:{
+    "Accounts - Residents":[1,6,17,24,33,31,18,21,30,19,26,28,3],
+    "Residents":[0,6,13,9,7,2,9,4,2,2,2,2,0],
+    "Tasks":[0,5,12,6,14,11,2,0,0,0,0,0,0],
+    "OSPM: Residents":[21,23,2,0,2,0,0,0,0,0,0,0,0],
+    "Reporting":[0,0,2,2,0,7,9,1,2,5,4,2,0],
+    "Affordable - Monthly Processing":[0,1,1,7,4,1,0,3,3,1,3,8,1]
+  },
+  labels:["Accounts - Residents","Residents","Tasks","OSPM: Residents","Reporting","Affordable - Monthly Processing","Reports, SDE and Tasks","Accounts - Applicants","Settings","Accounts - Affordable Waitlist","Affordable - Daily Activities","Accounts - All Accounts"],
+  counts:[257,58,50,48,34,33,30,28,24,21,20,20],
+  subfa_labels:["Compliance - Certifications","Other","Certifications","Financial - Ledger","Final Account Statements","Reports","HAP Vouchers","Tax Credit","Waitlist Applicant","Reports - AR","Generate Renewal Offer","Financial","Expiring","People","Affordable"],
+  subfa_counts:[168,65,38,28,25,21,20,18,16,16,15,15,15,14,12],
+  subfa_sev:{
+    labels:["Compliance - Certifications","Other","Certifications","Financial - Ledger","Final Account Statements","Reports","HAP Vouchers","Tax Credit","Waitlist Applicant","Reports - AR"],
+    High:[117,27,27,16,20,2,13,9,5,3],
+    Medium:[51,38,11,12,5,19,7,9,11,13]
+  },
+  table:[
+    {fa:"Accounts - Residents",total:257,closed:241,pct:93.8},
+    {fa:"Residents",total:58,closed:56,pct:96.6},
+    {fa:"Tasks",total:50,closed:49,pct:98.0},
+    {fa:"OSPM: Residents",total:48,closed:48,pct:100.0},
+    {fa:"Reporting",total:34,closed:30,pct:88.2},
+    {fa:"Affordable - Monthly Processing",total:33,closed:30,pct:90.9},
+    {fa:"Reports, SDE and Tasks",total:30,closed:27,pct:90.0},
+    {fa:"Accounts - Applicants",total:28,closed:25,pct:89.3},
+    {fa:"Settings",total:24,closed:22,pct:91.7},
+    {fa:"Accounts - Affordable Waitlist",total:21,closed:19,pct:90.5},
+    {fa:"Accounts - All Accounts",total:20,closed:18,pct:90.0},
+    {fa:"Affordable - Daily Activities",total:20,closed:19,pct:95.0},
+    {fa:"Items Services",total:19,closed:18,pct:94.7},
+    {fa:"Operations",total:19,closed:19,pct:100.0},
+    {fa:"Integration",total:18,closed:17,pct:94.4}
+  ],
+  teams:{
+    labels:["Stark","Challengers","TChalla","Captivators","Shuri","Oscar","Groot","Dr Strange"],
+    counts:[265,140,109,108,104,96,32,28]
+  },
+  combo:[
+    {fa:"Accounts - Residents",sub:"Compliance - Certifications",n:138},
+    {fa:"OSPM: Residents",sub:"Compliance - Certifications",n:26},
+    {fa:"Accounts - Residents",sub:"Financial - Ledger",n:25},
+    {fa:"Residents",sub:"Certifications",n:21},
+    {fa:"Reports, SDE and Tasks",sub:"Reports",n:21},
+    {fa:"Affordable - Monthly Processing",sub:"HAP Vouchers",n:20},
+    {fa:"Tasks",sub:"Expiring",n:15},
+    {fa:"Tasks",sub:"Final Account Statements",n:13},
+    {fa:"Residents",sub:"Final Account Statements",n:12},
+    {fa:"Reporting",sub:"Reports - AR",n:11},
+    {fa:"Settings",sub:"Accounts Receivable",n:11},
+    {fa:"Accounts - All Accounts",sub:"Final Account Statement (FAS)",n:11},
+    {fa:"Accounts - Affordable Waitlist",sub:"Waitlist Applicant",n:10},
+    {fa:"Integration",sub:"Unified Platform",n:9},
+    {fa:"OSPM: Residents",sub:"Financial",n:9}
+  ]
 };
 
-// TREND
-new Chart(document.getElementById('trendChart'), {
-  data:{
-    labels:months,
-    datasets:[
-      { type:'bar', label:'Monthly', data:counts, backgroundColor:'#B5D4F4', borderRadius:4, order:2 },
-      { type:'line', label:'3-mo MA', data:ma3, borderColor:'#B52B2B', borderWidth:2, pointRadius:3, pointBackgroundColor:'#B52B2B', tension:0.4, fill:false, order:1 }
-    ]
-  },
-  options:{
-    responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{display:false}, tooltip:{backgroundColor:'rgba(26,25,22,0.85)', padding:10, cornerRadius:6, mode:'index', intersect:false} },
-    scales:baseScales
-  }
-});
+const MOM = {
+  labels:["May 25","Jun 25","Jul 25","Aug 25","Sep 25","Oct 25","Nov 25","Dec 25","Jan 26","Feb 26","Mar 26","Apr 26"],
+  counts:[77,129,87,99,100,91,68,63,77,74,81,74]
+};
+const MA3 = MOM.counts.map((v,i)=>i<2?null:Math.round((MOM.counts[i-2]+MOM.counts[i-1]+v)/3));
 
-// SEVERITY
-new Chart(document.getElementById('sevChart'), {
+// ── DATES ──────────────────────────────────────────────────────────────────
+const now = new Date();
+const fmtDate = d => d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+document.getElementById('gen-date').textContent = 'Generated ' + fmtDate(now);
+document.getElementById('nav-date').textContent = fmtDate(now);
+document.getElementById('footer-date').textContent = 'Report generated: ' + fmtDate(now);
+
+// ── CHART HELPERS ──────────────────────────────────────────────────────────
+const TC = '#9E9C96', GC = 'rgba(0,0,0,.06)';
+const SC = {
+  x:{ticks:{color:TC,font:{size:10},autoSkip:false,maxRotation:40},grid:{display:false},border:{display:false}},
+  y:{ticks:{color:TC,font:{size:10}},grid:{color:GC},border:{display:false}}
+};
+const SCY = { // for horizontal bars
+  x:{ticks:{color:TC,font:{size:10}},grid:{color:GC},border:{display:false}},
+  y:{ticks:{color:TC,font:{size:10}},grid:{display:false},border:{display:false}}
+};
+const TT = {backgroundColor:'rgba(26,25,22,.88)',padding:10,cornerRadius:6,borderColor:'rgba(0,0,0,.12)',borderWidth:1};
+const PAL = ['#1B5FA8','#226B3A','#B06D10','#5140AA','#B52B2B','#0E6B5E','#7D5A20','#333A8A','#8B3A62','#1A7A6E','#6B4C0E','#3B5998'];
+
+// ── 1. TREND ───────────────────────────────────────────────────────────────
+new Chart(document.getElementById('trendChart'),{
   type:'bar',
-  data:{
-    labels:months,
-    datasets:[
-      { label:'Critical', data:[0,1,0,0,1,0,0,0,0,0,0,0], backgroundColor:'#B52B2B', borderRadius:2 },
-      { label:'High', data:[35,59,47,53,46,40,30,22,43,24,33,32], backgroundColor:'#E09020', borderRadius:2 },
-      { label:'Medium', data:[42,69,40,46,53,51,38,41,34,49,48,42], backgroundColor:'#1B5FA8', borderRadius:2 }
-    ]
-  },
-  options:{
-    responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{display:false}, tooltip:{backgroundColor:'rgba(26,25,22,0.85)', padding:10, cornerRadius:6, mode:'index', intersect:false} },
-    scales:{ ...baseScales }
-  }
+  data:{labels:MOM.labels,datasets:[
+    {label:'Monthly',data:MOM.counts,backgroundColor:'rgba(27,95,168,.28)',borderColor:'rgba(27,95,168,.55)',borderWidth:1,borderRadius:4,order:2,yAxisID:'y'},
+    {type:'line',label:'3-mo MA',data:MA3,borderColor:'#B52B2B',borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#B52B2B',tension:.4,fill:false,order:1,yAxisID:'y'}
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{...TT,mode:'index',intersect:false}},
+    scales:SC}
 });
 
-// DONUT STATE
-new Chart(document.getElementById('stateChart'), {
+// ── 2. SEVERITY (stacked) ─────────────────────────────────────────────────
+new Chart(document.getElementById('sevChart'),{
+  type:'bar',
+  data:{labels:MOM.labels,datasets:[
+    {label:'Critical',data:[0,1,0,0,1,0,0,0,0,0,0,0],backgroundColor:'#B52B2B',borderRadius:2,stack:'s'},
+    {label:'High',data:[35,59,47,53,46,40,30,22,43,24,33,32],backgroundColor:'#B06D10',borderRadius:0,stack:'s'},
+    {label:'Medium',data:[42,69,40,46,53,51,38,41,34,49,48,42],backgroundColor:'#1B5FA8',borderRadius:0,stack:'s'}
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{...TT,mode:'index',intersect:false}},
+    scales:SC}
+});
+
+// ── 3. STATE DONUT ─────────────────────────────────────────────────────────
+new Chart(document.getElementById('stateChart'),{
   type:'doughnut',
   data:{
     labels:['Closed','Active','Test in Progress','Resolved','Defined','Ready to Work','Other'],
-    datasets:[{ data:[968,15,14,11,7,6,5], backgroundColor:['#1D9E75','#E24B4A','#EF9F27','#378ADD','#7F77DD','#5DCAA5','#B4B2A9'], borderWidth:3, borderColor:'#fff' }]
+    datasets:[{data:[968,15,14,11,7,6,5],
+      backgroundColor:['#226B3A','#B52B2B','#B06D10','#1B5FA8','#5140AA','#0E6B5E','#9E9C96'],
+      borderWidth:3,borderColor:'#FFFFFF'}]
   },
-  options:{
-    responsive:true, maintainAspectRatio:false, cutout:'65%',
-    plugins:{ legend:{display:false}, tooltip:{backgroundColor:'rgba(26,25,22,0.85)', padding:10, cornerRadius:6, callbacks:{label:c=>` ${c.label}: ${c.parsed} (${Math.round(c.parsed/1026*100)}%)`}} }
-  }
+  options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
+    plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>` ${c.label}: ${c.parsed} (${(c.parsed/1026*100).toFixed(1)}%)`}}}}
 });
 
-// DOMAIN BAR
-const domLabels = ['Compliance Affordable','Financial AR','Affordable Processing','Renewals/Transfers','Move in/out','Certification Forms','Account Mgmt','Document Mgmt'];
-const domVals = [290,238,105,95,82,41,38,32];
-const domColors = ['#1B5FA8','#0E6B5E','#B06D10','#5140AA','#B52B2B','#226B3A','#7D6C20','#555'];
-new Chart(document.getElementById('domainChart'), {
+// ── 4. FA BAR ──────────────────────────────────────────────────────────────
+new Chart(document.getElementById('faBarChart'),{
   type:'bar',
-  data:{ labels:domLabels, datasets:[{ label:'Defects', data:domVals, backgroundColor:domColors, borderRadius:4 }]},
-  options:{
-    indexAxis:'y', responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{display:false}, tooltip:{backgroundColor:'rgba(26,25,22,0.85)', padding:10, cornerRadius:6} },
-    scales:{
-      x:{ ticks:{color:txtColor,font:{size:11}}, grid:{color:gridColor}, border:{display:false} },
-      y:{ ticks:{color:txtColor,font:{size:11}}, grid:{display:false}, border:{display:false} }
-    }
-  }
+  data:{
+    labels:FA.labels.map(l=>l.replace('Accounts - ','Acc. ').replace('Affordable - ','Aff. ')),
+    datasets:[{label:'Defects',data:FA.counts,backgroundColor:PAL,borderRadius:4}]
+  },
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>` ${FA.labels[c.dataIndex]}: ${c.parsed}`}}},
+    scales:SCY}
 });
 
-// DOMAIN PIE
-new Chart(document.getElementById('domainPie'), {
+// ── 5. FA PIE ──────────────────────────────────────────────────────────────
+const pieL = [...FA.labels.slice(0,5),'Others'];
+const pieC = [...FA.counts.slice(0,5), FA.counts.slice(5).reduce((a,b)=>a+b,0)];
+new Chart(document.getElementById('faPieChart'),{
   type:'doughnut',
-  data:{
-    labels:['Compliance Affordable','Financial AR','Affordable Processing','Renewals/Transfers','Move in/out','Others'],
-    datasets:[{ data:[290,238,105,95,82,216], backgroundColor:['#1B5FA8','#0E6B5E','#B06D10','#5140AA','#B52B2B','#C4C2BB'], borderWidth:3, borderColor:'#fff' }]
-  },
-  options:{
-    responsive:true, maintainAspectRatio:false, cutout:'60%',
-    plugins:{ legend:{display:false}, tooltip:{backgroundColor:'rgba(26,25,22,0.85)', padding:10, cornerRadius:6, callbacks:{label:c=>` ${c.label}: ${c.parsed} (${Math.round(c.parsed/1026*100)}%)`}} }
-  }
+  data:{labels:pieL,datasets:[{data:pieC,backgroundColor:PAL,borderWidth:3,borderColor:'#FFFFFF'}]},
+  options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+    plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>` ${c.label}: ${c.parsed} (${(c.parsed/1026*100).toFixed(1)}%)`}}}}
+});
+const pieLegEl = document.getElementById('fa-pie-legend');
+pieL.forEach((l,i)=>{ pieLegEl.innerHTML += `<div class="li"><div class="ls" style="background:${PAL[i]}"></div>${l} — ${(pieC[i]/1026*100).toFixed(1)}%</div>`; });
+
+// ── 6. FA TREND ────────────────────────────────────────────────────────────
+const faKeys = Object.keys(FA.series);
+const faTLeg = document.getElementById('fa-trend-legend');
+faKeys.forEach((k,i)=>{ faTLeg.innerHTML += `<div class="li"><div class="ls" style="background:${PAL[i]}"></div>${k}</div>`; });
+new Chart(document.getElementById('faTrendChart'),{
+  type:'line',
+  data:{labels:FA.months,datasets:faKeys.map((k,i)=>({
+    label:k,data:FA.series[k],
+    borderColor:PAL[i],backgroundColor:PAL[i]+'18',
+    borderWidth:2,pointRadius:3,pointHoverRadius:5,tension:.35,fill:false
+  }))},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{...TT,mode:'index',intersect:false}},
+    scales:SC}
 });
 
-// AVG YEAR CHART
-const rcaLabels = ['Code issue','Not an issue','Data','Config','New Req','Design','Env','Architecture','Ambiguous'];
-const avg2025 = [87.5,43.9,44.2,12.7,3.4,6.0,3.5,1.3,2.7];
-const avg2026 = [62.4,12.0,23.0,7.8,1.8,6.8,5.0,1.3,0.0];
-new Chart(document.getElementById('avgYearChart'), {
+// ── 7. FA TABLE ────────────────────────────────────────────────────────────
+const tbdy = document.getElementById('fa-table-body');
+FA.table.forEach((r,i)=>{
+  const w = Math.round(r.closed/r.total*100);
+  const badge = r.pct>=99?'<span class="badge b-g">100%</span>':r.pct>=95?'<span class="badge b-b">High</span>':r.pct>=90?'<span class="badge b-a">Good</span>':'<span class="badge b-r">Watch</span>';
+  tbdy.innerHTML += `<tr>
+    <td class="mono" style="color:var(--text3)">${i+1}</td>
+    <td style="font-weight:500">${r.fa}</td>
+    <td class="mono" style="text-align:right;font-weight:600;color:var(--blue)">${r.total}</td>
+    <td class="mono" style="text-align:right">${r.closed}</td>
+    <td class="mono" style="text-align:right">${r.pct}%</td>
+    <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${w}%;background:var(--green)"></div></div></div></td>
+    <td>${badge}</td>
+  </tr>`;
+});
+
+// ── 8. SUBFA BAR ───────────────────────────────────────────────────────────
+new Chart(document.getElementById('subfaChart'),{
+  type:'bar',
+  data:{labels:FA.subfa_labels,datasets:[{label:'Defects',data:FA.subfa_counts,backgroundColor:FA.subfa_labels.map((_,i)=>PAL[i%PAL.length]),borderRadius:3}]},
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{...TT}},
+    scales:{x:{ticks:{color:TC,font:{size:10}},grid:{color:GC},border:{display:false}},y:{ticks:{color:TC,font:{size:9}},grid:{display:false},border:{display:false}}}}
+});
+
+// ── 9. SUBFA SEVERITY ──────────────────────────────────────────────────────
+const svShort = FA.subfa_sev.labels.map(l=>l.length>22?l.slice(0,22)+'…':l);
+new Chart(document.getElementById('subfaSevChart'),{
+  type:'bar',
+  data:{labels:svShort,datasets:[
+    {label:'High',data:FA.subfa_sev.High,backgroundColor:'#B06D10',borderRadius:3,stack:'s'},
+    {label:'Medium',data:FA.subfa_sev.Medium,backgroundColor:'#1B5FA8',borderRadius:3,stack:'s'}
+  ]},
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{...TT,mode:'y',intersect:false,callbacks:{title:ctx=>FA.subfa_sev.labels[ctx[0].dataIndex]}}},
+    scales:{x:{ticks:{color:TC,font:{size:10}},grid:{color:GC},border:{display:false}},y:{ticks:{color:TC,font:{size:9}},grid:{display:false},border:{display:false}}}}
+});
+
+// ── 10. COMBO LIST ─────────────────────────────────────────────────────────
+const comboEl = document.getElementById('combo-list');
+FA.combo.forEach((c,i)=>{
+  comboEl.innerHTML += `<div class="combo-row">
+    <span class="combo-rank">${String(i+1).padStart(2,'0')}</span>
+    <span class="combo-fa">${c.fa}</span>
+    <span class="combo-arrow">→</span>
+    <span class="combo-sub">${c.sub}</span>
+    <span class="combo-count">${c.n}</span>
+  </div>`;
+});
+
+// ── 11. TEAM CARDS ─────────────────────────────────────────────────────────
+const tTotal = FA.teams.counts.reduce((a,b)=>a+b,0);
+const tcEl = document.getElementById('team-cards');
+FA.teams.labels.forEach((t,i)=>{
+  const pct = (FA.teams.counts[i]/tTotal*100).toFixed(1);
+  tcEl.innerHTML += `<div class="team-card">
+    <div class="team-name">${t}</div>
+    <div class="team-count" style="color:${PAL[i]}">${FA.teams.counts[i]}</div>
+    <div class="team-pct">${pct}% of volume</div>
+  </div>`;
+});
+
+// ── 12. TEAM BAR ───────────────────────────────────────────────────────────
+new Chart(document.getElementById('teamChart'),{
+  type:'bar',
+  data:{labels:FA.teams.labels,datasets:[{label:'Defects',data:FA.teams.counts,backgroundColor:PAL,borderRadius:4}]},
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{...TT}},
+    scales:{x:{ticks:{color:TC,font:{size:10}},grid:{color:GC},border:{display:false}},y:{ticks:{color:TC,font:{size:11}},grid:{display:false},border:{display:false}}}}
+});
+
+// ── 13. AVG YoY ────────────────────────────────────────────────────────────
+new Chart(document.getElementById('avgChart'),{
   type:'bar',
   data:{
-    labels:rcaLabels,
+    labels:['Code issue','Not an issue','Data','Config','New Req','Design','Env','Architecture','Ambiguous'],
     datasets:[
-      { label:'2025 avg/mo', data:avg2025, backgroundColor:'#B5D4F4', borderRadius:3 },
-      { label:'2026 avg/mo', data:avg2026, backgroundColor:'#1B5FA8', borderRadius:3 }
+      {label:'2025 avg/mo',data:[87.5,43.9,44.2,12.7,3.4,6.0,3.5,1.3,2.7],backgroundColor:'rgba(27,95,168,.3)',borderRadius:3},
+      {label:'2026 avg/mo',data:[62.4,12.0,23.0,7.8,1.8,6.8,5.0,1.3,0.0],backgroundColor:'#1B5FA8',borderRadius:3}
     ]
   },
-  options:{
-    responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{display:false}, tooltip:{backgroundColor:'rgba(26,25,22,0.85)', padding:10, cornerRadius:6, mode:'index', intersect:false} },
-    scales:{
-      x:{ ticks:{color:txtColor,font:{size:11},maxRotation:35,autoSkip:false}, grid:{display:false}, border:{display:false} },
-      y:{ ticks:{color:txtColor,font:{size:11}}, grid:{color:gridColor}, border:{display:false} }
-    }
-  }
-});
-
-// DOMAIN TABLE
-const total = 1026;
-const domData = [
-  {name:'OSPM: Compliance Affordable', count:290, priority:'High'},
-  {name:'OSPM: Financial AR', count:238, priority:'High'},
-  {name:'OSPM: Affordable Processing', count:105, priority:'Medium'},
-  {name:'OSPM: Renewals / Transfers', count:95, priority:'Medium'},
-  {name:'OSPM: Move in / Move out', count:82, priority:'Medium'},
-  {name:'OSPM: Certification Forms & State Reporting', count:41, priority:'Low'},
-  {name:'OSPM: Account Mgmt', count:38, priority:'Low'},
-  {name:'OSPM: Document Mgmt', count:32, priority:'Low'},
-  {name:'OSPM: Lead Mgmt', count:27, priority:'Low'},
-  {name:'OSPM: Items and Services', count:22, priority:'Low'},
-];
-const maxVal = domData[0].count;
-const priBadge = p => {
-  if(p==='High') return '<span class="badge badge-red">High</span>';
-  if(p==='Medium') return '<span class="badge badge-amber">Medium</span>';
-  return '<span class="badge badge-blue">Low</span>';
-};
-const barColor = p => p==='High'?'#B52B2B':p==='Medium'?'#E09020':'#1B5FA8';
-const tbody = document.getElementById('domain-table-body');
-domData.forEach(d => {
-  const pct = Math.round(d.count/total*100);
-  const w = Math.round(d.count/maxVal*100);
-  tbody.innerHTML += `<tr>
-    <td>${d.name}</td>
-    <td style="text-align:right;font-family:'DM Mono',monospace;font-weight:500;">${d.count}</td>
-    <td style="text-align:right;font-family:'DM Mono',monospace;">${pct}%</td>
-    <td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:${w}%;background:${barColor(d.priority)}"></div></div></div></td>
-    <td>${priBadge(d.priority)}</td>
-  </tr>`;
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{...TT,mode:'index',intersect:false}},
+    scales:{x:{ticks:{color:TC,font:{size:9},maxRotation:35,autoSkip:false},grid:{display:false},border:{display:false}},y:{ticks:{color:TC,font:{size:10}},grid:{color:GC},border:{display:false}}}}
 });
 </script>
 </body>
