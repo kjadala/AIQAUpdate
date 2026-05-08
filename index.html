@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PME Defect Analysis — Code Issue · Customer Discovered</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #F7F6F3;
+    --surface: #FFFFFF;
+    --surface2: #F0EEE9;
+    --border: rgba(0,0,0,0.08);
+    --border2: rgba(0,0,0,0.14);
+    --text: #1A1916;
+    --text2: #6B6860;
+    --text3: #9E9C96;
+    --blue: #1B5FA8;
+    --blue-light: #DBE9F8;
+    --amber: #B06D10;
+    --amber-light: #FEF0D6;
+    --red: #B52B2B;
+    --red-light: #FDEAEA;
+    --green: #226B3A;
+    --green-light: #E4F5EC;
+    --teal: #0E6B5E;
+    --teal-light: #DFF2EE;
+    --purple: #5140AA;
+    --purple-light: #EDEAFB;
+    --radius: 10px;
+    --radius-lg: 16px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--text);
+    padding: 28px 40px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .header-left h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: -0.3px;
+    margin-bottom: 6px;
+  }
+  .header-left .subtitle {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .filter-pill {
+    background: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.85);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.18);
+    font-family: 'DM Mono', monospace;
+  }
+  .header-right {
+    text-align: right;
+  }
+  .header-right .date {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    font-family: 'DM Mono', monospace;
+  }
+  .header-right .report-id {
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+    font-family: 'DM Mono', monospace;
+    margin-top: 3px;
+  }
+
+  /* MAIN */
+  .main { padding: 32px 40px 48px; max-width: 1200px; margin: 0 auto; }
+
+  /* METRIC STRIP */
+  .metric-strip {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px 16px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent, var(--blue));
+    border-radius: 2px 2px 0 0;
+  }
+  .metric-card .m-label {
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .metric-card .m-value {
+    font-size: 30px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -1px;
+    line-height: 1;
+    margin-bottom: 5px;
+  }
+  .metric-card .m-sub {
+    font-size: 11px;
+    color: var(--text3);
+  }
+  .metric-card .m-delta {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 20px;
+    margin-top: 4px;
+  }
+  .delta-down { background: var(--green-light); color: var(--green); }
+  .delta-up { background: var(--red-light); color: var(--red); }
+  .delta-neutral { background: var(--amber-light); color: var(--amber); }
+
+  /* SECTION LABEL */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text3);
+    margin-bottom: 12px;
+    margin-top: 28px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* CHART CARDS */
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 22px 24px;
+    box-shadow: var(--shadow);
+  }
+  .chart-card .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .chart-card .card-desc {
+    font-size: 12px;
+    color: var(--text3);
+    margin-bottom: 16px;
+  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .mb16 { margin-bottom: 16px; }
+
+  /* LEGEND */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .legend-sq {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* INSIGHT BOX */
+  .insight-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .insight-card {
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    border: 1px solid transparent;
+  }
+  .insight-card.blue { background: var(--blue-light); border-color: rgba(27,95,168,0.15); }
+  .insight-card.amber { background: var(--amber-light); border-color: rgba(176,109,16,0.15); }
+  .insight-card.green { background: var(--green-light); border-color: rgba(34,107,58,0.15); }
+  .insight-card.red { background: var(--red-light); border-color: rgba(181,43,43,0.15); }
+  .insight-card.purple { background: var(--purple-light); border-color: rgba(81,64,170,0.15); }
+  .insight-icon { font-size: 18px; margin-bottom: 6px; }
+  .insight-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .insight-text { font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+  /* TABLE */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .data-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text3);
+    border-bottom: 1px solid var(--border2);
+    background: var(--surface2);
+  }
+  .data-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--surface2); }
+  .bar-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .bar-bg {
+    flex: 1;
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .bar-fill { height: 100%; border-radius: 3px; }
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-family: 'DM Mono', monospace;
+  }
+  .badge-blue { background: var(--blue-light); color: var(--blue); }
+  .badge-amber { background: var(--amber-light); color: var(--amber); }
+  .badge-red { background: var(--red-light); color: var(--red); }
+  .badge-green { background: var(--green-light); color: var(--green); }
+
+  /* FOOTER */
+  .footer {
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    padding: 18px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer .f-left {
+    font-size: 12px;
+    color: var(--text3);
+  }
+  .footer .f-right {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: 'DM Mono', monospace;
+  }
+
+  @media (max-width: 900px) {
+    .header { padding: 20px 20px; flex-direction: column; align-items: flex-start; gap: 8px; }
+    .main { padding: 20px 16px 40px; }
+    .metric-strip { grid-template-columns: repeat(2, 1fr); }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .insight-grid { grid-template-columns: 1fr 1fr; }
+    .footer { padding: 14px 20px; flex-direction: column; gap: 6px; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <h1>PME Defect Analysis</h1>
+    <div class="subtitle">
+      <span>Filters active:</span>
+      <span class="filter-pill">DefectRCA = Code issue</span>
+      <span class="filter-pill">DiscoveredBy = Customer</span>
+      <span class="filter-pill">Past 12 months</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="date" id="report-date"></div>
+    <div class="report-id">PME-RCA-001 · Monthly Report</div>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- KPI STRIP -->
+  <div class="metric-strip">
+    <div class="metric-card" style="--accent:#1B5FA8">
+      <div class="m-label">Total defects (12m)</div>
+      <div class="m-value">1,026</div>
+      <div class="m-sub">Code issue · Customer</div>
+    </div>
+    <div class="metric-card" style="--accent:#B06D10">
+      <div class="m-label">2025 avg / month</div>
+      <div class="m-value">87.5</div>
+      <div class="m-sub">Jan–Dec 2025</div>
+      <div class="m-delta delta-up">▲ baseline</div>
+    </div>
+    <div class="metric-card" style="--accent:#226B3A">
+      <div class="m-label">2026 avg / month</div>
+      <div class="m-value">62.4</div>
+      <div class="m-sub">Jan–Apr 2026</div>
+      <div class="m-delta delta-down">▼ 29% vs 2025</div>
+    </div>
+    <div class="metric-card" style="--accent:#B52B2B">
+      <div class="m-label">Peak month</div>
+      <div class="m-value">129</div>
+      <div class="m-sub">Jun 2025</div>
+      <div class="m-delta delta-neutral">↘ resolved</div>
+    </div>
+    <div class="metric-card" style="--accent:#226B3A">
+      <div class="m-label">Resolution rate</div>
+      <div class="m-value">94.3%</div>
+      <div class="m-sub">968 of 1,026 closed</div>
+      <div class="m-delta delta-down">✓ healthy</div>
+    </div>
+  </div>
+
+  <!-- TREND SECTION -->
+  <div class="section-label">Monthly trend &amp; severity</div>
+
+  <div class="mb16">
+    <div class="chart-card">
+      <div class="card-title">Month-over-month defect count with 3-month moving average</div>
+      <div class="card-desc">Code issue defects discovered by customers — May 2025 to May 2026</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-sq" style="background:#1B5FA8"></div>Monthly count</div>
+        <div class="legend-item"><div class="legend-sq" style="background:#B52B2B; height:2px; border-radius:0; width:16px; align-self:center;"></div>3-month moving avg</div>
+      </div>
+      <div style="position:relative;height:220px;">
+        <canvas id="trendChart" role="img" aria-label="Monthly defect trend May 2025 to May 2026 with 3-month moving average overlay showing downward trend from Jun 2025 peak.">Monthly: May 77, Jun 129, Jul 87, Aug 99, Sep 100, Oct 91, Nov 68, Dec 63, Jan 77, Feb 74, Mar 81, Apr 74.</canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="chart-card">
+      <div class="card-title">Severity breakdown by month</div>
+      <div class="card-desc">Stacked by Critical / High / Medium</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-sq" style="background:#B52B2B"></div>Critical</div>
+        <div class="legend-item"><div class="legend-sq" style="background:#E09020"></div>High</div>
+        <div class="legend-item"><div class="legend-sq" style="background:#1B5FA8"></div>Medium</div>
+      </div>
+      <div style="position:relative;height:210px;">
+        <canvas id="sevChart" role="img" aria-label="Stacked bar severity chart. Mostly Medium and High; only 2 Critical incidents in Jun and Sep 2025.">Severity stacked monthly — High and Medium dominant, 2 Critical total.</canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="card-title">Defect resolution status</div>
+      <div class="card-desc">Current open vs closed breakdown</div>
+      <div style="position:relative;height:240px;">
+        <canvas id="stateChart" role="img" aria-label="Donut chart showing 94.3% closed, 5.7% open across various states.">States: Closed 968, Active 15, Test in Progress 14, Resolved 11, Defined 7, Ready to Work 6, Other 5.</canvas>
+      </div>
+      <div class="legend" style="margin-top:10px; justify-content:center;">
+        <div class="legend-item"><div class="legend-sq" style="background:#1D9E75"></div>Closed (94%)</div>
+        <div class="legend-item"><div class="legend-sq" style="background:#E24B4A"></div>Active (1.5%)</div>
+        <div class="legend-item"><div class="legend-sq" style="background:#EF9F27"></div>In Progress (1.4%)</div>
+        <div class="legend-item"><div class="legend-sq" style="background:#378ADD"></div>Other (3%)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOMAIN SECTION -->
+  <div class="section-label">Domain &amp; area breakdown</div>
+
+  <div class="grid-3 mb16">
+    <div class="chart-card">
+      <div class="card-title">Top affected domains</div>
+      <div class="card-desc">Past 12 months · all defects in filter</div>
+      <div style="position:relative;height:280px;">
+        <canvas id="domainChart" role="img" aria-label="Horizontal bar chart. Compliance Affordable leads at 290, Financial AR at 238, then Affordable Processing 105, Renewals 95, Move in/out 82.">Top domains by defect count.</canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="card-title">Domain distribution</div>
+      <div class="card-desc">Share of total volume</div>
+      <div style="position:relative;height:220px;">
+        <canvas id="domainPie" role="img" aria-label="Donut chart of domain share. Compliance Affordable and Financial AR together account for over 51%.">Domain share donut chart.</canvas>
+      </div>
+      <div class="legend" style="margin-top:10px; flex-direction:column; gap:6px;">
+        <div class="legend-item"><div class="legend-sq" style="background:#1B5FA8"></div>Compliance Affordable — 28%</div>
+        <div class="legend-item"><div class="legend-sq" style="background:#0E6B5E"></div>Financial AR — 23%</div>
+        <div class="legend-item"><div class="legend-sq" style="background:#B06D10"></div>Affordable Processing — 10%</div>
+        <div class="legend-item"><div class="legend-sq" style="background:#5140AA"></div>Renewals/Transfers — 9%</div>
+        <div class="legend-item"><div class="legend-sq" style="background:#B52B2B"></div>Move in/out — 8%</div>
+        <div class="legend-item"><div class="legend-sq" style="background:#888"></div>Others — 22%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOMAIN TABLE -->
+  <div class="chart-card mb16">
+    <div class="card-title" style="margin-bottom:14px;">Domain detail — past 12 months</div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Domain</th>
+          <th style="text-align:right;">Count</th>
+          <th style="text-align:right;">% Share</th>
+          <th style="width:180px;">Volume</th>
+          <th>Priority</th>
+        </tr>
+      </thead>
+      <tbody id="domain-table-body"></tbody>
+    </table>
+  </div>
+
+  <!-- RCA YEAR COMPARISON -->
+  <div class="section-label">Year-over-year &amp; RCA comparison</div>
+
+  <div class="mb16">
+    <div class="chart-card">
+      <div class="card-title">Average defects per month by RCA category — 2025 vs 2026</div>
+      <div class="card-desc">All Customer-discovered defects · grouped by root cause</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-sq" style="background:#B5D4F4"></div>2025 avg/month</div>
+        <div class="legend-item"><div class="legend-sq" style="background:#1B5FA8"></div>2026 avg/month</div>
+      </div>
+      <div style="position:relative;height:240px;">
+        <canvas id="avgYearChart" role="img" aria-label="Grouped bar chart comparing RCA categories. Code issue is largest at 87.5 in 2025 and 62.4 in 2026. All categories show improvement.">Avg by year and RCA category grouped bar chart.</canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEY INSIGHTS -->
+  <div class="section-label">Key insights &amp; recommendations</div>
+
+  <div class="insight-grid">
+    <div class="insight-card blue">
+      <div class="insight-icon">📉</div>
+      <div class="insight-title">Significant YoY improvement</div>
+      <div class="insight-text">Monthly average dropped from 87.5 (2025) to 62.4 (2026) — a 29% reduction. Code quality initiatives appear to be taking effect.</div>
+    </div>
+    <div class="insight-card red">
+      <div class="insight-icon">🔴</div>
+      <div class="insight-title">June 2025 spike — investigation needed</div>
+      <div class="insight-text">Jun 2025 saw 129 defects — 48% above the yearly average. A post-mortem or release retrospective is recommended to prevent recurrence.</div>
+    </div>
+    <div class="insight-card amber">
+      <div class="insight-icon">⚠️</div>
+      <div class="insight-title">Compliance Affordable is top domain</div>
+      <div class="insight-text">28% of all customer-reported code issues come from Compliance Affordable. Targeted code reviews and regression testing are advised.</div>
+    </div>
+    <div class="insight-card green">
+      <div class="insight-icon">✅</div>
+      <div class="insight-title">Resolution health is strong</div>
+      <div class="insight-text">94.3% of defects are closed with only 58 open items. The team is maintaining a healthy backlog closure rate.</div>
+    </div>
+    <div class="insight-card purple">
+      <div class="insight-icon">📊</div>
+      <div class="insight-title">2026 stabilizing at ~75/month</div>
+      <div class="insight-text">Jan–Apr 2026 show consistent volume of 74–81/month. Monitor for continued improvement or further decline to establish new baseline.</div>
+    </div>
+    <div class="insight-card blue">
+      <div class="insight-icon">🎯</div>
+      <div class="insight-title">Focus: Financial AR + Compliance</div>
+      <div class="insight-text">Top 2 domains (Compliance Affordable + Financial AR) account for 51% of all volume. Addressing these two areas has the highest leverage.</div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <div class="f-left">PME Defect Report · DefectRCA = Code issue · DiscoveredBy = Customer · Source: TFS WorkItems</div>
+  <div class="f-right" id="footer-date"></div>
+</footer>
+
+<script>
+const now = new Date();
+const fmt = d => d.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
+document.getElementById('report-date').textContent = 'Generated ' + fmt(now);
+document.getElementById('footer-date').textContent = 'Report generated: ' + fmt(now);
+
+const months = ['May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26'];
+const counts = [77,129,87,99,100,91,68,63,77,74,81,74];
+const ma3 = counts.map((v,i) => i<2 ? null : Math.round((counts[i-2]+counts[i-1]+v)/3));
+
+const txtColor = '#9E9C96';
+const gridColor = 'rgba(0,0,0,0.06)';
+const baseScales = {
+  x:{ ticks:{color:txtColor,font:{size:11},autoSkip:false,maxRotation:40}, grid:{display:false}, border:{display:false} },
+  y:{ ticks:{color:txtColor,font:{size:11}}, grid:{color:gridColor}, border:{display:false} }
+};
+
+// TREND
+new Chart(document.getElementById('trendChart'), {
+  data:{
+    labels:months,
+    datasets:[
+      { type:'bar', label:'Monthly', data:counts, backgroundColor:'#B5D4F4', borderRadius:4, order:2 },
+      { type:'line', label:'3-mo MA', data:ma3, borderColor:'#B52B2B', borderWidth:2, pointRadius:3, pointBackgroundColor:'#B52B2B', tension:0.4, fill:false, order:1 }
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{backgroundColor:'rgba(26,25,22,0.85)', padding:10, cornerRadius:6, mode:'index', intersect:false} },
+    scales:baseScales
+  }
+});
+
+// SEVERITY
+new Chart(document.getElementById('sevChart'), {
+  type:'bar',
+  data:{
+    labels:months,
+    datasets:[
+      { label:'Critical', data:[0,1,0,0,1,0,0,0,0,0,0,0], backgroundColor:'#B52B2B', borderRadius:2 },
+      { label:'High', data:[35,59,47,53,46,40,30,22,43,24,33,32], backgroundColor:'#E09020', borderRadius:2 },
+      { label:'Medium', data:[42,69,40,46,53,51,38,41,34,49,48,42], backgroundColor:'#1B5FA8', borderRadius:2 }
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{backgroundColor:'rgba(26,25,22,0.85)', padding:10, cornerRadius:6, mode:'index', intersect:false} },
+    scales:{ ...baseScales }
+  }
+});
+
+// DONUT STATE
+new Chart(document.getElementById('stateChart'), {
+  type:'doughnut',
+  data:{
+    labels:['Closed','Active','Test in Progress','Resolved','Defined','Ready to Work','Other'],
+    datasets:[{ data:[968,15,14,11,7,6,5], backgroundColor:['#1D9E75','#E24B4A','#EF9F27','#378ADD','#7F77DD','#5DCAA5','#B4B2A9'], borderWidth:3, borderColor:'#fff' }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false, cutout:'65%',
+    plugins:{ legend:{display:false}, tooltip:{backgroundColor:'rgba(26,25,22,0.85)', padding:10, cornerRadius:6, callbacks:{label:c=>` ${c.label}: ${c.parsed} (${Math.round(c.parsed/1026*100)}%)`}} }
+  }
+});
+
+// DOMAIN BAR
+const domLabels = ['Compliance Affordable','Financial AR','Affordable Processing','Renewals/Transfers','Move in/out','Certification Forms','Account Mgmt','Document Mgmt'];
+const domVals = [290,238,105,95,82,41,38,32];
+const domColors = ['#1B5FA8','#0E6B5E','#B06D10','#5140AA','#B52B2B','#226B3A','#7D6C20','#555'];
+new Chart(document.getElementById('domainChart'), {
+  type:'bar',
+  data:{ labels:domLabels, datasets:[{ label:'Defects', data:domVals, backgroundColor:domColors, borderRadius:4 }]},
+  options:{
+    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{backgroundColor:'rgba(26,25,22,0.85)', padding:10, cornerRadius:6} },
+    scales:{
+      x:{ ticks:{color:txtColor,font:{size:11}}, grid:{color:gridColor}, border:{display:false} },
+      y:{ ticks:{color:txtColor,font:{size:11}}, grid:{display:false}, border:{display:false} }
+    }
+  }
+});
+
+// DOMAIN PIE
+new Chart(document.getElementById('domainPie'), {
+  type:'doughnut',
+  data:{
+    labels:['Compliance Affordable','Financial AR','Affordable Processing','Renewals/Transfers','Move in/out','Others'],
+    datasets:[{ data:[290,238,105,95,82,216], backgroundColor:['#1B5FA8','#0E6B5E','#B06D10','#5140AA','#B52B2B','#C4C2BB'], borderWidth:3, borderColor:'#fff' }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false, cutout:'60%',
+    plugins:{ legend:{display:false}, tooltip:{backgroundColor:'rgba(26,25,22,0.85)', padding:10, cornerRadius:6, callbacks:{label:c=>` ${c.label}: ${c.parsed} (${Math.round(c.parsed/1026*100)}%)`}} }
+  }
+});
+
+// AVG YEAR CHART
+const rcaLabels = ['Code issue','Not an issue','Data','Config','New Req','Design','Env','Architecture','Ambiguous'];
+const avg2025 = [87.5,43.9,44.2,12.7,3.4,6.0,3.5,1.3,2.7];
+const avg2026 = [62.4,12.0,23.0,7.8,1.8,6.8,5.0,1.3,0.0];
+new Chart(document.getElementById('avgYearChart'), {
+  type:'bar',
+  data:{
+    labels:rcaLabels,
+    datasets:[
+      { label:'2025 avg/mo', data:avg2025, backgroundColor:'#B5D4F4', borderRadius:3 },
+      { label:'2026 avg/mo', data:avg2026, backgroundColor:'#1B5FA8', borderRadius:3 }
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{backgroundColor:'rgba(26,25,22,0.85)', padding:10, cornerRadius:6, mode:'index', intersect:false} },
+    scales:{
+      x:{ ticks:{color:txtColor,font:{size:11},maxRotation:35,autoSkip:false}, grid:{display:false}, border:{display:false} },
+      y:{ ticks:{color:txtColor,font:{size:11}}, grid:{color:gridColor}, border:{display:false} }
+    }
+  }
+});
+
+// DOMAIN TABLE
+const total = 1026;
+const domData = [
+  {name:'OSPM: Compliance Affordable', count:290, priority:'High'},
+  {name:'OSPM: Financial AR', count:238, priority:'High'},
+  {name:'OSPM: Affordable Processing', count:105, priority:'Medium'},
+  {name:'OSPM: Renewals / Transfers', count:95, priority:'Medium'},
+  {name:'OSPM: Move in / Move out', count:82, priority:'Medium'},
+  {name:'OSPM: Certification Forms & State Reporting', count:41, priority:'Low'},
+  {name:'OSPM: Account Mgmt', count:38, priority:'Low'},
+  {name:'OSPM: Document Mgmt', count:32, priority:'Low'},
+  {name:'OSPM: Lead Mgmt', count:27, priority:'Low'},
+  {name:'OSPM: Items and Services', count:22, priority:'Low'},
+];
+const maxVal = domData[0].count;
+const priBadge = p => {
+  if(p==='High') return '<span class="badge badge-red">High</span>';
+  if(p==='Medium') return '<span class="badge badge-amber">Medium</span>';
+  return '<span class="badge badge-blue">Low</span>';
+};
+const barColor = p => p==='High'?'#B52B2B':p==='Medium'?'#E09020':'#1B5FA8';
+const tbody = document.getElementById('domain-table-body');
+domData.forEach(d => {
+  const pct = Math.round(d.count/total*100);
+  const w = Math.round(d.count/maxVal*100);
+  tbody.innerHTML += `<tr>
+    <td>${d.name}</td>
+    <td style="text-align:right;font-family:'DM Mono',monospace;font-weight:500;">${d.count}</td>
+    <td style="text-align:right;font-family:'DM Mono',monospace;">${pct}%</td>
+    <td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:${w}%;background:${barColor(d.priority)}"></div></div></div></td>
+    <td>${priBadge(d.priority)}</td>
+  </tr>`;
+});
+</script>
+</body>
+</html>
